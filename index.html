@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="http://v4-alpha.getbootstrap.com/favicon.ico">
+    <link rel="stylesheet" href="http://codemirror.net/lib/codemirror.css">
+    <link rel="stylesheet" href="http://codemirror.net/theme/abcdef.css">
+
+    <title>Grid Template for Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="http://v4-alpha.getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="http://v4-alpha.getbootstrap.com/assets/js/ie10-viewport-bug-workaround.js"></script>
+
+
+<!-- Load CodeMirror Scripts -->
+    <script src="http://codemirror.net/lib/codemirror.js"></script>
+    <script src="http://codemirror.net/mode/clike/clike.js"></script>
+
+  </head>
+
+  <body>
+    <div class="container-fluid">
+
+      <div class="page-header">
+        <h1>Code Collab</h1>
+      </div>
+
+      <h3>Two columns</h3>
+      <p>Get two columns <strong>starting at desktops and scaling to large desktops</strong>.</p>
+      <div class="row">
+
+        <!-- code editor -->
+        <div class="col-md-8">
+
+          <style type="text/css">
+            body
+            {
+              margin: 0;
+              padding: 0;
+              max-width:inherit;
+              height: 100%;
+            }
+            html, form, .CodeMirror, .CodeMirror-scroll
+            {
+              height: 100%;
+            }
+          </style>
+          <body>
+          <textarea id="editortext">
+
+          </textarea>
+
+          <script>
+            var editor = CodeMirror.fromTextArea(document.getElementById("editortext"), {
+            mode: 'text/x-java',
+            lineNumbers: true,
+            theme: "abcdef"
+            });
+          </script>
+
+          <script src="/socket.io/socket.io.js"></script>
+          <script>
+            var socket = io.connect();
+            socket.on('refreshEditor', function (data) {
+              editor.setValue(data.body);
+            });
+            socket.on('editorChange', function (data) {
+              console.log(data);
+              editor.replaceRange(data.text, data.from, data.to);
+            });
+            editor.on('change', function (i, changesObj) {
+              console.log(changesObj);
+              socket.emit('editorChange', changesObj);
+              socket.emit('refreshEditor', editor.getValue());
+            });
+          </script>
+
+          </body>
+
+        </div>
+
+        <!-- chatroom -->
+        <div class="col-md-4">
+          <ul id="messages" class="list-group"></ul>
+          <form>
+            <div class="form-row">
+              <div class="col-10">
+                <input type="text" id="msg" class="form-control" placeholder="Type a Message...">
+              </div>
+              <div class="col-2">
+                <button type="button" class="btn btn-dark">Send</button>
+              </div>
+            </div>
+          </form>
+
+        </div>
+
+        <!-- JS -->
+      	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+      	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+      	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4" crossorigin="anonymous"></script>
+      	<script src="/socket.io/socket.io.js"></script>
+      	<script>
+      		$(function() {
+      			var socket = io();
+      			$('form').submit(function() {
+      				socket.emit('chat message', $('#msg').val());
+      				$('#msg').val('');
+      				return false;
+      			});
+      			socket.on('chat message', function(msg) {
+      				var li = $('<li></li>').text(msg);
+      				li.addClass('list-group-item');
+      				$('#messages').append(li);
+      			});
+      		});
+      	</script>
+
+      </div>
+
+    </div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+
+  </body>
+</html>
