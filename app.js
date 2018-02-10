@@ -1,3 +1,6 @@
+// Following gist repository was used as an example to build the real-time changes for the text editor: https://gist.github.com/danopia/5424963
+// Following tutorial was used to help build the chat functionality: https://socket.io/get-started/chat/
+
 const express = require("express");
 const path = require("path");
 const socketio = require("socket.io");
@@ -13,14 +16,15 @@ app.get("/", (req, res) => {
 	res.sendFile(__dirname+"/index.html");
 });
 
-
-var socks = [];
+// starting text for the code editor
 var starterBody = "public class HelloWorld {\n\tpublic static void main(String[] args) {\n\t\tSystem.out.println(\"Hello, World\");\n\t}\n}";
 
+// listener for when a user connects
 io.sockets.on("connection", socket => {
+	//add user to a room named 'chatroom'
+	socket.join('chatroom');
 	console.log("User connected!");
-  // add new users socket to socket list
-  socks.push(socket);
+
 	// send signal to refresh editor to client
 	socket.emit('refreshEditor', {body: starterBody});
 
@@ -30,13 +34,12 @@ io.sockets.on("connection", socket => {
 		body = body_;
 	});
 
-	// emit editor changes to all other sockets
+	// emit editor changes to all others in chatroom
 	socket.on('editorChange', function (changesObj) {
 		console.log(changesObj);
 		if (changesObj.origin == '+input' || changesObj.origin == 'paste' || changesObj.origin == '+delete') {
-			socks.forEach(function (sock) {
-				if (sock != socket)
-					sock.emit('editorChange', changesObj);
+			// broadcasts chages to all other sockets in chatroom
+			socket.broadcast.to('chatroom').emit('editorChange', changesObj);
 			});
 		};
 	});
@@ -45,77 +48,12 @@ io.sockets.on("connection", socket => {
 		console.log("User disconnected!");
 	});
 
-  // send users chat message
+  // send all users chat message
 	socket.on("chat message", msg => {
-		io.emit("chat message", msg);
+		io.to('chatroom').emit("chat message", msg);
 	})
 });
 
 http.listen(PORT, () => {
 	console.log("Server started on port " + PORT);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// var app = require('http').createServer(handler),
-//     io = require('socket.io').listen(app),
-//     fs = require('fs');
-//
-// app.listen(3000);
-//
-// function handler (req, res) {
-//   fs.readFile(__dirname + '/index.html',
-//   function (err, data) {
-//     if (err) {
-//       res.writeHead(500);
-//       return res.end('Error loading index.html');
-//     }
-//
-//     res.writeHead(200);
-//     res.end(data);
-//   });
-// }
-//
-// var socks = [];
-// var body = "public class HelloWorld {\n\tpublic static void main(String[] args) {\n\t\tSystem.out.println(\"Hello, World\");\n\t}\n}";
-// io.sockets.on('connection', function (socket) {
-//   socks.push(socket);
-//   socket.emit('refresh', {body: body});
-//
-//   socket.on('refresh', function (body_) {
-//     console.log('new body');
-//     body = body_;
-//   });
-//
-//   socket.on('change', function (op) {
-//     console.log(op);
-//     if (op.origin == '+input' || op.origin == 'paste' || op.origin == '+delete') {
-//       socks.forEach(function (sock) {
-//         if (sock != socket)
-//           sock.emit('change', op);
-//       });
-//     };
-//   });
-// });

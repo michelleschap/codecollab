@@ -38,7 +38,7 @@
       <div class="row">
 
         <!-- code editor -->
-        <div class="col-md-8">
+        <div class="col-8">
 
           <style type="text/css">
             body
@@ -88,7 +88,7 @@
         </div>
 
         <!-- chatroom -->
-        <div class="col-md-4">
+        <div class="col-4">
           <ul id="messages" class="list-group"></ul>
           <form>
             <div class="form-row">
@@ -96,7 +96,7 @@
                 <input type="text" id="msg" class="form-control" placeholder="Type a Message...">
               </div>
               <div class="col-2">
-                <button type="button" class="btn btn-dark">Send</button>
+                <button type="submit" class="btn btn-dark">Send</button>
               </div>
             </div>
           </form>
@@ -110,7 +110,7 @@
       	<script src="/socket.io/socket.io.js"></script>
       	<script>
       		$(function() {
-      			var socket = io();
+      			var socket = io.connect();
       			$('form').submit(function() {
       				socket.emit('chat message', $('#msg').val());
       				$('#msg').val('');
